@@ -66,4 +66,8 @@ function App() {
 function Step({ label, done }: { label: string; done: boolean }) { return <div className="step"><span className={done ? "step-icon done" : "step-icon"}>{done ? <Check size={13} /> : <span />}</span>{label}</div> }
 function ImpactMap({ result }: { result: Result }) { const nodes = [{ label: "CHANGE REQUEST", value: "Phone authentication", type: "root" }, { label: "AUTHENTICATION", value: `${result.affected_components.length} symbols`, type: "auth" }, { label: "SURFACES", value: `${result.affected_files.length} files`, type: "surface" }, { label: "VERIFICATION", value: `${result.tests.length} test files`, type: "test" }]; return <div className="impact-map"><div className="map-caption"><GitBranch size={16} /> dependency relationship <span>live evidence</span></div><div className="map-flow">{nodes.map((node, index) => <div className="map-node-wrap" key={node.label}><div className={`map-node ${node.type}`}><small>{node.label}</small><strong>{node.value}</strong></div>{index < nodes.length - 1 && <div className="connector"><span /></div>}</div>)}</div><div className="map-footer"><span><FileCode2 size={15} /> {result.affected_files.length} affected files</span><span><Terminal size={15} /> {result.affected_apis.length} API surfaces</span><span><ShieldCheck size={15} /> {result.dependencies.length} dependencies</span></div></div> }
 
-createRoot(document.getElementById("root")!).render(<StrictMode><App /></StrictMode>);
+const container = document.getElementById("root")!;
+const rootHost = globalThis as typeof globalThis & { __codeguardianRoot?: ReturnType<typeof createRoot> };
+const root = rootHost.__codeguardianRoot ?? createRoot(container);
+rootHost.__codeguardianRoot = root;
+root.render(<StrictMode><App /></StrictMode>);
