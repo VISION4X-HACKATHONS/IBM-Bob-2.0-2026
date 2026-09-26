@@ -1,0 +1,11 @@
+node_modules/
+__pycache__/
+.venv/
+.env
+*.pyc
+dist/
+build/
+.vscode/
+*.sqlite
+*.tsbuildinfo
+frontend/package-lock.json
