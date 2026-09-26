@@ -28,6 +28,15 @@ class VerifyRequest(BaseModel):
     repository_path: str = "sample-project"
 
 
+class AnalysisReference(BaseModel):
+    analysis_id: str
+
+
+class ImplementationRequest(AnalysisReference):
+    approved: bool = False
+    files: list[str] = []
+
+
 @app.get("/api/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
@@ -49,6 +58,28 @@ def get_analysis(analysis_id: str) -> dict[str, object]:
     if analysis_id not in analyses:
         raise HTTPException(status_code=404, detail="Analysis not found")
     return analyses[analysis_id]
+
+
+@app.post("/api/plan")
+def plan(payload: AnalysisReference) -> dict[str, object]:
+    item = get_analysis(payload.analysis_id)
+    result = item["result"]
+    return {"analysis_id": payload.analysis_id, "status": "ready", "plan": result["plan"]}
+
+
+@app.post("/api/implement")
+def implement(payload: ImplementationRequest) -> dict[str, object]:
+    item = get_analysis(payload.analysis_id)
+    result = item["result"]
+    affected_files = set(result["affected_files"])
+    requested_files = sorted(set(payload.files)) if payload.files else sorted(affected_files)
+    unauthorized = sorted(set(requested_files) - affected_files)
+    if unauthorized:
+        raise HTTPException(status_code=400, detail={"message": "Implementation files must come from the analysis result.", "files": unauthorized})
+    if not payload.approved:
+        return {"analysis_id": payload.analysis_id, "status": "approval_required", "files": requested_files, "message": "Review the plan and approve these files before implementation."}
+    item["status"] = "implementation_approved"
+    return {"analysis_id": payload.analysis_id, "status": "approved_manifest", "files": requested_files, "changed_files": [], "message": "Manifest approved. No files were modified."}
 
 
 @app.post("/api/verify")
