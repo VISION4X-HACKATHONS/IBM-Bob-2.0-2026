@@ -97,6 +97,16 @@ def verify(payload: VerifyRequest) -> dict[str, object]:
     return verification
 
 
+@app.get("/api/git/status")
+def git_status(repository_path: str = "sample-project") -> dict[str, object]:
+    repository = (ROOT / repository_path).resolve()
+    if not repository.exists() or not repository.is_dir() or ROOT not in repository.parents and repository != ROOT:
+        raise HTTPException(status_code=400, detail="Repository path must be an existing directory inside this workspace.")
+    status = subprocess.run(["git", "status", "--short"], cwd=repository, capture_output=True, text=True, timeout=15)
+    diff = subprocess.run(["git", "diff", "--stat"], cwd=repository, capture_output=True, text=True, timeout=15)
+    return {"repository_path": repository_path, "clean": not status.stdout.strip(), "status": status.stdout.splitlines(), "diff_stat": diff.stdout.splitlines()}
+
+
 @app.get("/api/report/{analysis_id}")
 def report(analysis_id: str) -> dict[str, object]:
     item = get_analysis(analysis_id)

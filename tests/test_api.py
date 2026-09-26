@@ -36,3 +36,10 @@ def test_report_includes_actual_verification_result():
     assert verification.json()["status"] == "passed"
     assert report.json()["status"] == "verified"
     assert report.json()["report"]["verification"]["exit_code"] == 0
+
+
+def test_git_status_is_read_only_and_returns_repository_evidence():
+    response = client.get("/api/git/status", params={"repository_path": "sample-project"})
+    assert response.status_code == 200
+    assert response.json()["repository_path"] == "sample-project"
+    assert isinstance(response.json()["status"], list)
