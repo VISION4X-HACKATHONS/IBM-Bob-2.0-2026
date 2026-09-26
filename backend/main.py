@@ -26,6 +26,7 @@ class AnalyzeRequest(BaseModel):
 
 class VerifyRequest(BaseModel):
     repository_path: str = "sample-project"
+    analysis_id: str | None = None
 
 
 class AnalysisReference(BaseModel):
@@ -88,10 +89,16 @@ def verify(payload: VerifyRequest) -> dict[str, object]:
     if not repository.exists():
         raise HTTPException(status_code=400, detail="Repository not found")
     completed = subprocess.run([sys.executable, "-m", "pytest", "-q"], cwd=repository, capture_output=True, text=True, timeout=60)
-    return {"status": "passed" if completed.returncode == 0 else "failed", "exit_code": completed.returncode, "output": (completed.stdout + completed.stderr)[-6000:]}
+    verification = {"status": "passed" if completed.returncode == 0 else "failed", "exit_code": completed.returncode, "output": (completed.stdout + completed.stderr)[-6000:]}
+    if payload.analysis_id:
+        item = get_analysis(payload.analysis_id)
+        item["verification"] = verification
+        item["status"] = "verified" if verification["status"] == "passed" else "verification_failed"
+    return verification
 
 
 @app.get("/api/report/{analysis_id}")
 def report(analysis_id: str) -> dict[str, object]:
     item = get_analysis(analysis_id)
-    return {"analysis_id": analysis_id, "status": item["status"], "report": item["result"]}
+    result = item["result"]
+    return {"analysis_id": analysis_id, "status": item["status"], "report": {**result, "verification": item.get("verification", {"status": "pending", "message": "Verification has not run."})}}
