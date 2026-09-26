@@ -86,8 +86,8 @@ def implement(payload: ImplementationRequest) -> dict[str, object]:
 @app.post("/api/verify")
 def verify(payload: VerifyRequest) -> dict[str, object]:
     repository = (ROOT / payload.repository_path).resolve()
-    if not repository.exists():
-        raise HTTPException(status_code=400, detail="Repository not found")
+    if not repository.exists() or not repository.is_dir() or ROOT not in repository.parents and repository != ROOT:
+        raise HTTPException(status_code=400, detail="Repository path must be an existing directory inside this workspace.")
     completed = subprocess.run([sys.executable, "-m", "pytest", "-q"], cwd=repository, capture_output=True, text=True, timeout=60)
     verification = {"status": "passed" if completed.returncode == 0 else "failed", "exit_code": completed.returncode, "output": (completed.stdout + completed.stderr)[-6000:]}
     if payload.analysis_id:

@@ -23,7 +23,11 @@ npm install
 npm run dev
 ```
 
-The frontend runs at `http://localhost:5173` and the API at `http://localhost:8000`.
+The frontend runs at `http://localhost:5173` and the API at `http://localhost:8001`.
+
+### Docker
+
+After the local workflow is working, run `docker compose up --build`. The frontend is available at `http://localhost:5173` and the API at `http://localhost:8001`.
 
 ## Workflow
 
