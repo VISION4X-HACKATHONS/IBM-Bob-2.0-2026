@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { Activity, ArrowUpRight, Check, ChevronRight, CircleAlert, FileCode2, GitBranch, LoaderCircle, Play, Radar, ShieldCheck, Terminal, TestTube2 } from "lucide-react";
 import "./styles.css";
 
-const API = "http://localhost:8000/api";
+const API = "http://localhost:8001/api";
 type PlanItem = { task: string; files: string[]; reason: string; risk: string };
 type Result = { request: string; affected_files: string[]; affected_components: string[]; affected_apis: string[]; database_components: string[]; dependencies: string[]; tests: string[]; security_risks: string[]; confidence: number; plan: PlanItem[]; evidence: { files: string[]; symbols: { name: string; kind: string; file: string; line: number }[] } };
 

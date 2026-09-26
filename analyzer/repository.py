@@ -9,7 +9,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 
-SUPPORTED_EXTENSIONS = {".py", ".js", ".jsx", ".ts", ".tsx", ".json", ".sql", ".md"}
+SUPPORTED_EXTENSIONS = {".py", ".js", ".jsx", ".ts", ".tsx", ".json", ".sql", ".md", ".txt", ".toml"}
 SKIP_DIRS = {".git", "node_modules", ".venv", "__pycache__", "dist", "build"}
 REQUEST_TERMS = {
     "phone": {"phone", "mobile", "sms", "otp", "telephone"},
