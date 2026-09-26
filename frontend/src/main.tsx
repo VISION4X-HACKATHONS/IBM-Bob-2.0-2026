@@ -14,6 +14,7 @@ function App() {
   const [result, setResult] = useState<Result | null>(null);
   const [analysisId, setAnalysisId] = useState("");
   const [verification, setVerification] = useState<{ status: string; output: string } | null>(null);
+  const [gitState, setGitState] = useState<{ clean: boolean; status: string[]; diff_stat: string[] } | null>(null);
   const [implementation, setImplementation] = useState<{ status: string; message: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -30,7 +31,7 @@ function App() {
 
   async function verify() {
     setBusy(true); setError("");
-    try { const response = await fetch(`${API}/verify`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ repository_path: "sample-project", analysis_id: analysisId }) }); setVerification(await response.json()); }
+    try { const response = await fetch(`${API}/verify`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ repository_path: "sample-project", analysis_id: analysisId }) }); setVerification(await response.json()); const gitResponse = await fetch(`${API}/git/status?repository_path=sample-project`); setGitState(await gitResponse.json()); }
     catch { setError("Could not reach the verification API"); } finally { setBusy(false); }
   }
 
@@ -59,7 +60,7 @@ function App() {
       <div className="plan-list">{result.plan.map((item, index) => <div className="plan-item" key={item.task}><div className="plan-number">0{index + 1}</div><div className="plan-content"><h3>{item.task}</h3><p>{item.reason}</p>{item.files.length > 0 && <div className="file-pills">{item.files.map(file => <code key={file}>{file}</code>)}</div>}</div><span className={`risk-tag ${item.risk}`}>{item.risk}</span><ChevronRight size={18} /></div>)}</div>
       {implementation && <div className="approval-note"><ShieldCheck size={17} /><span><b>Manifest approved.</b> {implementation.message}</span></div>}
       <div className="verification"><div><p className="eyebrow">VERIFICATION / 04</p><h2>Run the regression suite</h2><p>Execute the sample project's real Pytest suite and attach the output to this analysis.</p></div><button className="secondary" onClick={verify} disabled={busy}><Play size={16} /> Run tests</button>{verification && <div className={`test-result ${verification.status}`}><TestTube2 size={19} /><div><b>{verification.status === "passed" ? "Verification passed" : "Verification failed"}</b><pre>{verification.output}</pre></div></div>}</div>
-      <section className="final-report"><div className="report-title"><FileText size={19} /><div><p className="eyebrow">FINAL REPORT / 05</p><h2>Change verification report</h2></div><span className={`report-status ${verification?.status === "passed" ? "verified" : "pending"}`}>{verification?.status === "passed" ? "VERIFIED" : "PENDING VERIFICATION"}</span></div><div className="report-grid"><div><small>REQUESTED CHANGE</small><b>{result.request}</b></div><div><small>FILES AFFECTED</small><b>{result.affected_files.length}</b></div><div><small>COMPONENTS</small><b>{result.affected_components.length}</b></div><div><small>TEST RESULT</small><b>{verification?.status === "passed" ? "Passed" : "Not run"}</b></div></div></section>
+      <section className="final-report"><div className="report-title"><FileText size={19} /><div><p className="eyebrow">FINAL REPORT / 05</p><h2>Change verification report</h2></div><span className={`report-status ${verification?.status === "passed" ? "verified" : "pending"}`}>{verification?.status === "passed" ? "VERIFIED" : "PENDING VERIFICATION"}</span></div><div className="report-grid"><div><small>REQUESTED CHANGE</small><b>{result.request}</b></div><div><small>FILES AFFECTED</small><b>{result.affected_files.length}</b></div><div><small>COMPONENTS</small><b>{result.affected_components.length}</b></div><div><small>TEST RESULT</small><b>{verification?.status === "passed" ? "Passed" : "Not run"}</b></div><div><small>WORKTREE</small><b>{gitState ? (gitState.clean ? "Clean" : `${gitState.status.length} changes`) : "Not checked"}</b></div></div></section>
     </>}
     <footer><span>CODEGUARDIAN / LOCAL-FIRST PROTOTYPE</span><span>Evidence before implementation</span></footer>
   </main>
