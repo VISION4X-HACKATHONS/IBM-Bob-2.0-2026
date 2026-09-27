@@ -71,20 +71,27 @@ def _looks_like_windows_absolute(path_text: str) -> bool:
 def _normalize_repository_string(path: str | Path) -> str:
     if path is None:
         raise ValueError("Repository path is required.")
+
     raw_text = str(path).strip()
+
     if raw_text == "":
         raise ValueError("Repository path is required.")
 
-    text = raw_text.strip('"\'')
-    text = text.strip()
+    text = raw_text.strip('"\'').strip()
+
     if text == "":
         raise ValueError("Repository path is required.")
 
-    text = text.replace("/", "\\")
-    while "\\\\" in text:
-        text = text.replace("\\\\", "\\")
-    if text.endswith("\\") and len(text) > 3:
-        text = text.rstrip("\\")
+    # Preserve Linux/Unix paths exactly.
+    # Normalize separators only for Windows-style paths.
+    if _looks_like_windows_absolute(text):
+        text = text.replace("/", "\\")
+        while "\\\\" in text:
+            text = text.replace("\\\\", "\\")
+
+        if text.endswith("\\") and len(text) > 3:
+            text = text.rstrip("\\")
+
     return text
 
 
