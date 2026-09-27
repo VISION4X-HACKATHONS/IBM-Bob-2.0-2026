@@ -12,7 +12,7 @@ services:
     healthCheckPath: /api/health
     envVars:
       - key: ALLOWED_ORIGINS
-        value: https://codeguardian-frontend.onrender.com
+        value: https://codeguardian-frontend-7cnx.onrender.com
       - key: CODEGUARDIAN_DB_PATH
         value: /tmp/.codeguardian/analyses.sqlite3
       - key: LLM_PROVIDER
