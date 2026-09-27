@@ -6,7 +6,7 @@ import "./approval.css";
 import "./report.css";
 import "./verification.css";
 
-const API = `${(import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000").replace(/\/$/, "")}/api`;
+const API = `${(import.meta.env.VITE_API_URL ?? "https://codeguardian-backend-kk78.onrender.com").replace(/\/$/, "")}/api`;
 type PlanItem = { task: string; files: string[]; reason: string; risk: string };
 type Result = { request: string; impact_message: string; analysis_duration: number; affected_files: string[]; affected_components: string[]; affected_apis: string[]; database_components: string[]; dependencies: string[]; tests: string[]; security_risks: string[]; confidence: number; confidence_label: string; plan: PlanItem[]; evidence: { files: string[]; symbols: { name: string; kind: string; file: string; line: number }[] } };
 type Verification = { status: string; reason?: string | null; framework: string | null; passed: number | null; failed: number | null; skipped: number | null; errors: number | null; total: number | null; duration: number | null; tests_discovered: number; command: string[][]; working_directory: string; output?: string; stdout?: string; stderr?: string; return_code?: number | null };
