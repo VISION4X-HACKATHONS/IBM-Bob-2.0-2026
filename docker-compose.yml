@@ -5,6 +5,8 @@ services:
       dockerfile: backend/Dockerfile
     ports:
       - "8001:8001"
+    volumes:
+      - codeguardian_data:/app/.codeguardian
   frontend:
     build:
       context: frontend
@@ -13,3 +15,6 @@ services:
       - "5173:80"
     depends_on:
       - backend
+
+volumes:
+  codeguardian_data:

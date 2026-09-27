@@ -7,5 +7,6 @@ dist/
 build/
 .vscode/
 *.sqlite
+.codeguardian/
 *.tsbuildinfo
 frontend/package-lock.json
