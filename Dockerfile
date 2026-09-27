@@ -28,4 +28,7 @@ COPY --from=frontend-build /frontend/dist /app/frontend/dist
 
 # Render injects PORT at runtime; fall back to 10000 (Render's default)
 EXPOSE 10000
-CMD ["sh", "-c", "uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-10000}"]
+# Docker healthcheck so the container is only marked ready when uvicorn is up
+HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:${PORT:-10000}/api/health', timeout=4)"
+CMD ["sh", "-c", "uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-10000} --workers 1 --timeout-keep-alive 75"]

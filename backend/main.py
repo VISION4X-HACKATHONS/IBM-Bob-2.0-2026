@@ -576,8 +576,13 @@ def report(
 _FRONTEND_DIST = Path("/app/frontend/dist")
 
 if _FRONTEND_DIST.is_dir():
-    # Serve /assets/, etc. directly
+    # Serve hashed assets (/assets/index-xxx.js, etc.) directly
     app.mount("/assets", StaticFiles(directory=str(_FRONTEND_DIST / "assets")), name="assets")
+
+    @app.get("/", include_in_schema=False)
+    def serve_root() -> FileResponse:
+        """Serve index.html for the root path explicitly."""
+        return FileResponse(str(_FRONTEND_DIST / "index.html"))
 
     @app.get("/{full_path:path}", include_in_schema=False)
     def serve_spa(full_path: str) -> FileResponse:
