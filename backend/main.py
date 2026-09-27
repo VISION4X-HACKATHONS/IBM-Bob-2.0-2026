@@ -11,6 +11,8 @@ from urllib.parse import urlparse
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from analyzer.repository import analyze_change, to_dict, validate_repository_path
@@ -564,3 +566,23 @@ def report(
             ),
         },
     }
+
+
+# ---------------------------------------------------------------------------
+# Serve the React frontend as static files from the same process.
+# The Dockerfile builds the frontend first and copies dist/ into /app/frontend/dist.
+# All /api/* routes above take priority; everything else is handled here.
+# ---------------------------------------------------------------------------
+_FRONTEND_DIST = Path("/app/frontend/dist")
+
+if _FRONTEND_DIST.is_dir():
+    # Serve /assets/, etc. directly
+    app.mount("/assets", StaticFiles(directory=str(_FRONTEND_DIST / "assets")), name="assets")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    def serve_spa(full_path: str) -> FileResponse:
+        """Return index.html for every non-API path so React Router works."""
+        requested = _FRONTEND_DIST / full_path
+        if requested.is_file():
+            return FileResponse(str(requested))
+        return FileResponse(str(_FRONTEND_DIST / "index.html"))

@@ -1,35 +1,29 @@
 services:
-  # ── Backend ─────────────────────────────────────────────────────────────────
-  # FastAPI + uvicorn served by Docker.
-  # Root Dockerfile (./Dockerfile) is used because Render sets dockerfilePath
-  # to ./Dockerfile by default and the PATCH API does not override it.
+  # Single full-stack service: FastAPI backend + React frontend in one container.
+  # The backend serves the built frontend as static files on every non-/api route.
   - type: web
-    name: codeguardian-backend
+    name: codeguardian
     runtime: docker
     dockerfilePath: ./Dockerfile
     dockerContext: .
     plan: free
     healthCheckPath: /api/health
     envVars:
+      # CORS is not needed when frontend and backend share the same origin,
+      # but kept so local development still works.
       - key: ALLOWED_ORIGINS
-        value: https://codeguardian-frontend-7cnx.onrender.com
+        value: http://localhost:5173,http://127.0.0.1:5173
+
+      # SQLite storage path inside the container.
       - key: CODEGUARDIAN_DB_PATH
         value: /tmp/.codeguardian/analyses.sqlite3
+
+      # LLM provider: "ollama" (default, local) or "gemini" (cloud).
       - key: LLM_PROVIDER
         value: ollama
 
-  # ── Frontend ─────────────────────────────────────────────────────────────────
-  # React + Vite SPA built in Docker, served by nginx.
-  # VITE_API_URL is a Docker ARG baked into the JS bundle at build time.
-  - type: web
-    name: codeguardian-frontend
-    runtime: docker
-    dockerfilePath: ./Dockerfile
-    dockerContext: frontend
-    plan: free
-    dockerBuildArgs:
-      - key: VITE_API_URL
-        value: https://codeguardian-backend-kk78.onrender.com
-    envVars:
-      - key: VITE_API_URL
-        value: https://codeguardian-backend-kk78.onrender.com
+      # Uncomment and fill in Render dashboard to enable Gemini AI code generation:
+      # - key: GEMINI_API_KEY
+      #   sync: false
+      # - key: GEMINI_MODEL
+      #   value: gemini-2.0-flash
