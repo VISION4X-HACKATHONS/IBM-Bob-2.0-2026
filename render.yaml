@@ -1,0 +1,52 @@
+services:
+  # ── Backend ─────────────────────────────────────────────────────────────────
+  # FastAPI application served by uvicorn inside a Docker container.
+  # Render injects PORT at runtime; the Dockerfile uses ${PORT:-8001}.
+  - type: web
+    name: codeguardian-backend
+    runtime: docker
+    dockerfilePath: backend/Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      # Allow the deployed frontend to call the API.
+      # Must match the frontend service's Render URL.
+      - key: ALLOWED_ORIGINS
+        value: https://codeguardian-frontend.onrender.com
+
+      # SQLite database path inside the container.
+      # On Render's free plan the filesystem is ephemeral — data is lost
+      # on each redeploy. For persistence, attach a Render Disk and change
+      # this to the disk mount path.
+      - key: CODEGUARDIAN_DB_PATH
+        value: /tmp/.codeguardian/analyses.sqlite3
+
+      # ── LLM provider ────────────────────────────────────────────────────────
+      # "ollama" requires a running Ollama instance reachable from this service.
+      # Set to "gemini" and add GEMINI_API_KEY for cloud-based code generation.
+      - key: LLM_PROVIDER
+        value: ollama
+
+      # Uncomment and supply your key via Render's dashboard to enable Gemini:
+      # - key: GEMINI_API_KEY
+      #   sync: false
+      # - key: GEMINI_MODEL
+      #   value: gemini-3.7-flash
+
+  # ── Frontend ─────────────────────────────────────────────────────────────────
+  # React + Vite SPA built inside Docker and served by nginx.
+  # VITE_API_URL is declared as a Docker ARG so Vite bakes it into the JS
+  # bundle at build time (see frontend/Dockerfile).
+  - type: web
+    name: codeguardian-frontend
+    runtime: docker
+    dockerfilePath: frontend/Dockerfile
+    dockerContext: frontend
+    plan: free
+    dockerBuildArgs:
+      - key: VITE_API_URL
+        value: https://codeguardian-backend.onrender.com
+    envVars:
+      - key: VITE_API_URL
+        value: https://codeguardian-backend.onrender.com

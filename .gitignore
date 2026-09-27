@@ -1,12 +1,46 @@
-node_modules/
+# Python
 __pycache__/
+*.py[cod]
+*.pyo
 .venv/
-.env
-*.pyc
+venv/
+env/
+*.egg-info/
+.eggs/
 dist/
 build/
-.vscode/
-*.sqlite
-.codeguardian/
+
+# Node
+node_modules/
+frontend/dist/
+frontend/build/
 *.tsbuildinfo
+
+# Secrets and environment
+.env
+.env.*
+!.env.example
+
+# Local databases (SQLite used by CodeGuardian storage)
+*.sqlite
+*.sqlite3
+*.db
+.codeguardian/
+
+# Test / coverage caches
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Build lock files (re-generated on install)
 frontend/package-lock.json
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini

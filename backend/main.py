@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import re
 import shutil
 import subprocess
@@ -27,14 +28,30 @@ ROOT = Path(__file__).resolve().parents[1]
 
 app = FastAPI(title="CODEGUARDIAN API", version="0.1.0")
 
-# CORS: local development + deployed Render frontend
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
+
+def _cors_origins() -> list[str]:
+    """
+    Build the CORS allow-list from the ALLOWED_ORIGINS environment variable.
+
+    The variable should be a comma-separated list of origins, e.g.:
+        ALLOWED_ORIGINS=https://my-frontend.onrender.com,http://localhost:5173
+
+    If the variable is not set, the defaults below are used so that local
+    development continues to work without any extra configuration.
+    """
+    raw = os.environ.get("ALLOWED_ORIGINS", "").strip()
+    if raw:
+        return [o.strip() for o in raw.split(",") if o.strip()]
+    # Default: allow local dev origins only
+    return [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
-        "https://codeguardian-frontend-ibm-bob-2-0-2026.onrender.com",
-    ],
+    ]
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_cors_origins(),
     allow_methods=["*"],
     allow_headers=["*"],
 )
